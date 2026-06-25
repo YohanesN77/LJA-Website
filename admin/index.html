@@ -348,22 +348,24 @@ function startApp() {
 
   // Iframe loaded
   document.getElementById('site-frame').addEventListener('load', () => {
-    // Wait for components to fully load
-    const waitForComponents = () => {
-      try {
-        iWin().addEventListener('componentsLoaded', () => {
-          setTimeout(injectEditScript, 300);
-        });
-        // Fallback: inject after 4s regardless
-        setTimeout(() => {
-          if (!siteReady) injectEditScript();
-        }, 4000);
-      } catch(e) {
-        setTimeout(injectEditScript, 2000);
-      }
-    };
-    waitForComponents();
+    // Try inject at multiple intervals as fallback
+    setTimeout(injectEditScript, 1000);
+    setTimeout(injectEditScript, 2500);
+    setTimeout(injectEditScript, 5000);
+
+    // Try listening for componentsLoaded event
+    try {
+      iWin().addEventListener('componentsLoaded', () => {
+        setTimeout(injectEditScript, 300);
+      });
+    } catch(e) {}
   });
+
+  // Force hide loading after 6s regardless
+  setTimeout(() => {
+    siteReady = true;
+    document.getElementById('loading').style.display = 'none';
+  }, 6000);
 }
 
 // ── Inject Edit Script into iframe ────────────────────────────────────────────

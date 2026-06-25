@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LJA Admin Panel</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f172a; --bg2: #1e293b; --bg3: #334155;
+  --border: #334155; --blue: #3b82f6; --green: #22c55e;
+  --red: #ef4444; --yellow: #f59e0b; --text: #e2e8f0; --text-m: #94a3b8;
+}
+
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; }
+
+/* ── LOGIN ─────────────────────────────────── */
+#login {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.login-box {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 20px;
+  padding: 44px 40px; width: 360px; text-align: center;
+}
+.login-box .logo-icon { font-size: 48px; margin-bottom: 16px; }
+.login-box h1 { font-size: 22px; font-weight: 800; }
+.login-box p  { color: var(--text-m); font-size: 13px; margin: 6px 0 24px; }
+.login-box input {
+  width: 100%; padding: 13px 16px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 15px; outline: none; margin-bottom: 10px;
+}
+.login-box input:focus { border-color: var(--blue); }
+#login-err { color: var(--red); font-size: 13px; min-height: 18px; margin-bottom: 10px; }
+
+/* ── APP ────────────────────────────────────── */
+#app { display: none; flex-direction: column; height: 100vh; }
+#app.show { display: flex; }
+
+/* ── TOOLBAR ────────────────────────────────── */
+#toolbar {
+  height: 56px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 16px; gap: 10px;
+  flex-shrink: 0; z-index: 100;
+}
+.tb-logo { font-weight: 800; font-size: 14px; white-space: nowrap; padding-right: 12px; border-right: 1px solid var(--border); }
+.tb-logo span { color: var(--blue); }
+
+#edit-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 18px; border-radius: 8px; border: 2px solid var(--border);
+  background: transparent; color: var(--text-m); cursor: pointer;
+  font-size: 13px; font-weight: 700; transition: all .2s; white-space: nowrap;
+}
+#edit-btn.on { background: var(--green); border-color: var(--green); color: white; }
+#edit-btn .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+#dirty-pill {
+  display: none; background: rgba(245,158,11,.15); border: 1px solid var(--yellow);
+  color: var(--yellow); font-size: 12px; font-weight: 600; padding: 4px 12px;
+  border-radius: 99px; white-space: nowrap;
+}
+#dirty-pill.show { display: inline-flex; align-items: center; gap: 6px; }
+
+.tb-hint { color: var(--text-m); font-size: 12px; flex: 1; }
+
+.tb-btn {
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--bg3);
+  color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600;
+  transition: all .15s; white-space: nowrap;
+}
+.tb-btn:hover { border-color: var(--blue); color: white; }
+.tb-btn.primary { background: var(--blue); border-color: var(--blue); color: white; }
+.tb-btn.primary:hover { background: #2563eb; }
+.tb-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── MAIN AREA ──────────────────────────────── */
+#main-area { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+/* ── IFRAME ─────────────────────────────────── */
+#site-frame {
+  flex: 1; border: none; height: 100%;
+  transition: margin-right .3s;
+}
+
+/* ── LOADING OVERLAY ────────────────────────── */
+#loading {
+  position: absolute; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; z-index: 50;
+}
+#loading .spin {
+  width: 36px; height: 36px; border: 3px solid var(--bg3);
+  border-top-color: var(--blue); border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+#loading p { color: var(--text-m); font-size: 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── IMAGE PANEL ────────────────────────────── */
+#img-panel {
+  width: 0; overflow: hidden; background: var(--bg2);
+  border-left: 1px solid var(--border); transition: width .3s;
+  display: flex; flex-direction: column;
+}
+#img-panel.open { width: 300px; }
+
+.panel-header {
+  display: flex; align-items: center; padding: 16px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.panel-header h3 { flex: 1; font-size: 14px; font-weight: 700; }
+.panel-header button {
+  background: var(--bg3); border: none; color: var(--text-m); width: 28px; height: 28px;
+  border-radius: 6px; cursor: pointer; font-size: 16px; display: flex;
+  align-items: center; justify-content: center;
+}
+.panel-header button:hover { color: white; }
+
+.panel-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Upload zone */
+.drop-zone {
+  border: 2px dashed var(--border); border-radius: 12px; padding: 20px 12px;
+  text-align: center; cursor: pointer; transition: all .2s;
+}
+.drop-zone:hover, .drop-zone.drag { border-color: var(--blue); background: rgba(59,130,246,.05); }
+.drop-zone p { color: var(--text-m); font-size: 12px; line-height: 1.5; }
+.drop-zone strong { color: var(--blue); font-size: 13px; display: block; margin-bottom: 4px; }
+#file-input { display: none; }
+
+/* Upload progress */
+#upload-progress .prog-item {
+  font-size: 12px; padding: 6px 8px; border-radius: 6px;
+  background: var(--bg3); margin-bottom: 4px;
+}
+
+/* Image grid */
+.img-section-title { font-size: 11px; color: var(--text-m); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.img-card {
+  background: var(--bg3); border: 2px solid transparent; border-radius: 8px;
+  overflow: hidden; cursor: pointer; transition: all .15s;
+}
+.img-card:hover { border-color: var(--blue); }
+.img-card.selected { border-color: var(--green); }
+.img-card img { width: 100%; height: 80px; object-fit: cover; display: block; }
+.img-card-name {
+  font-size: 10px; color: var(--text-m); padding: 4px 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Pick mode banner */
+#pick-banner {
+  background: rgba(245,158,11,.15); border: 1px solid var(--yellow);
+  border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--yellow);
+  text-align: center; display: none;
+}
+#pick-banner.show { display: block; }
+#pick-banner strong { display: block; font-size: 13px; margin-bottom: 2px; }
+
+/* ── TOAST ──────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600;
+  color: white; opacity: 0; transition: all .3s; z-index: 9999;
+  pointer-events: none;
+}
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+#toast.ok   { background: var(--green); }
+#toast.err  { background: var(--red); }
+#toast.info { background: var(--blue); }
+#toast.warn { background: var(--yellow); color: #0f172a; }
+
+/* ── BUTTONS ────────────────────────────────── */
+.btn {
+  padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer;
+  font-size: 14px; font-weight: 700; transition: all .15s;
+  display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+}
+.btn-blue  { background: var(--blue); color: white; width: 100%; }
+.btn-blue:hover { background: #2563eb; }
+.btn-green-sm {
+  background: var(--green); color: white; font-size: 12px; font-weight: 700;
+  padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer;
+  width: 100%; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.btn-green-sm:hover { background: #16a34a; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ──────────────────────────────────────────────── -->
+<div id="login">
+  <div class="login-box">
+    <div class="logo-icon">🔧</div>
+    <h1>LJA Admin Panel</h1>
+    <p>Login untuk mengedit website</p>
+    <input type="password" id="pw" placeholder="Password admin..." onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="login-err"></div>
+    <button class="btn btn-blue" onclick="doLogin()">Masuk →</button>
+  </div>
+</div>
+
+<!-- ── APP ────────────────────────────────────────────────── -->
+<div id="app">
+
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <div class="tb-logo">LJA <span>Admin</span></div>
+
+    <button id="edit-btn" onclick="toggleEdit()">
+      <span class="dot"></span>
+      <span id="edit-label">Mode Edit: OFF</span>
+    </button>
+
+    <div id="dirty-pill">
+      ● <span id="dirty-count">0</span> seksi belum disimpan
+    </div>
+
+    <div class="tb-hint" id="tb-hint">Aktifkan Mode Edit lalu klik teks atau gambar di website</div>
+
+    <button class="tb-btn" onclick="toggleImgPanel()" id="img-panel-btn">🖼️ Gambar</button>
+    <button class="tb-btn primary" id="save-btn" onclick="saveAll()" disabled>💾 Simpan Semua</button>
+    <button class="tb-btn" onclick="window.open('/','_blank')">🌐 Website</button>
+    <button class="tb-btn" onclick="doLogout()">🚪 Keluar</button>
+  </div>
+
+  <!-- Main -->
+  <div id="main-area">
+
+    <!-- Loading -->
+    <div id="loading">
+      <div class="spin"></div>
+      <p>Memuat website...</p>
+    </div>
+
+    <!-- Website iframe -->
+    <iframe id="site-frame" src="/"></iframe>
+
+    <!-- Image Panel -->
+    <div id="img-panel">
+      <div class="panel-header">
+        <h3>🖼️ Kelola Gambar</h3>
+        <button onclick="toggleImgPanel()">✕</button>
+      </div>
+      <div class="panel-body">
+
+        <!-- Pick mode banner -->
+        <div id="pick-banner">
+          <strong>🎯 Pilih gambar pengganti</strong>
+          Klik gambar di bawah untuk mengganti
+        </div>
+
+        <!-- Upload -->
+        <div class="drop-zone" id="drop-zone"
+          onclick="document.getElementById('file-input').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleDrop(event)">
+          <strong>📤 Upload Gambar</strong>
+          <p>Klik atau drag & drop<br>JPG, PNG, WEBP (maks. 15MB)</p>
+        </div>
+        <input type="file" id="file-input" accept="image/*" multiple onchange="uploadFiles(this.files)">
+
+        <!-- Progress -->
+        <div id="upload-progress"></div>
+
+        <!-- Gallery -->
+        <div class="img-section-title">Semua Gambar</div>
+        <div class="img-grid" id="img-grid">
+          <div style="color:var(--text-m);font-size:12px;grid-column:1/-1">Memuat...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────────
+let TOKEN = localStorage.getItem('lja_token') || '';
+let editMode = false;
+let imgPanelOpen = false;
+let pickingImage = false;   // waiting for user to select replacement image
+let dirtySections = new Set();
+let siteReady = false;
+
+const iframe = () => document.getElementById('site-frame');
+const iWin   = () => iframe().contentWindow;
+
+// ── API ────────────────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  if (r.status === 401) { doLogout(); return null; }
+  return r.json();
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+// ── Login / Logout ─────────────────────────────────────────────────────────────
+async function doLogin() {
+  const pw = document.getElementById('pw').value;
+  document.getElementById('login-err').textContent = '';
+  if (!pw) return;
+  const r = await fetch('/api/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: pw })
+  });
+  if (r.ok) {
+    const d = await r.json();
+    TOKEN = d.token;
+    localStorage.setItem('lja_token', TOKEN);
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('app').classList.add('show');
+    startApp();
+  } else {
+    document.getElementById('login-err').textContent = '❌ Password salah';
+  }
+}
+
+function doLogout() {
+  TOKEN = ''; localStorage.removeItem('lja_token'); location.reload();
+}
+
+// ── App Start ──────────────────────────────────────────────────────────────────
+function startApp() {
+  loadImages();
+
+  // Listen for messages from iframe
+  window.addEventListener('message', handleMessage);
+
+  // Iframe loaded
+  document.getElementById('site-frame').addEventListener('load', () => {
+    // Wait for components to fully load
+    const waitForComponents = () => {
+      try {
+        iWin().addEventListener('componentsLoaded', () => {
+          setTimeout(injectEditScript, 300);
+        });
+        // Fallback: inject after 4s regardless
+        setTimeout(() => {
+          if (!siteReady) injectEditScript();
+        }, 4000);
+      } catch(e) {
+        setTimeout(injectEditScript, 2000);
+      }
+    };
+    waitForComponents();
+  });
+}
+
+// ── Inject Edit Script into iframe ────────────────────────────────────────────
+function injectEditScript() {
+  try {
+    const doc = iframe().contentDocument;
+    if (!doc || doc.getElementById('__lja_edit')) return;
+
+    const script = doc.createElement('script');
+    script.id = '__lja_edit';
+    script.textContent = EDIT_SCRIPT;
+    doc.body.appendChild(script);
+  } catch(e) {
+    console.warn('Inject error:', e);
+  }
+}
+
+// ── Message Handler ────────────────────────────────────────────────────────────
+function handleMessage(e) {
+  const d = e.data;
+  if (!d || !d.type) return;
+
+  if (d.type === 'editReady') {
+    siteReady = true;
+    document.getElementById('loading').style.display = 'none';
+  }
+
+  if (d.type === 'markDirty') {
+    dirtySections.add(d.sectionId);
+    updateDirtyUI();
+  }
+
+  if (d.type === 'replaceImage') {
+    // User clicked an image in the iframe → open panel and enter pick mode
+    pickingImage = true;
+    if (!imgPanelOpen) toggleImgPanel();
+    document.getElementById('pick-banner').classList.add('show');
+    toast('Pilih gambar pengganti di panel kanan', 'warn');
+  }
+
+  if (d.type === 'sectionHtml') {
+    pendingSaves[d.sectionId] = d.html;
+    checkAndSave();
+  }
+}
+
+// ── Edit Mode ──────────────────────────────────────────────────────────────────
+function toggleEdit() {
+  editMode = !editMode;
+  const btn = document.getElementById('edit-btn');
+  const lbl = document.getElementById('edit-label');
+  const hint = document.getElementById('tb-hint');
+
+  if (editMode) {
+    btn.classList.add('on');
+    lbl.textContent = 'Mode Edit: ON';
+    hint.textContent = '✅ Klik teks untuk edit • Klik gambar untuk ganti • Tekan ESC untuk batal edit';
+    iWin().postMessage({ type: 'enableEdit' }, '*');
+    toast('Mode Edit aktif — klik elemen di website', 'info');
+  } else {
+    btn.classList.remove('on');
+    lbl.textContent = 'Mode Edit: OFF';
+    hint.textContent = 'Aktifkan Mode Edit lalu klik teks atau gambar di website';
+    iWin().postMessage({ type: 'disableEdit' }, '*');
+  }
+}
+
+// ── Dirty sections UI ──────────────────────────────────────────────────────────
+function updateDirtyUI() {
+  const count = dirtySections.size;
+  const pill = document.getElementById('dirty-pill');
+  const saveBtn = document.getElementById('save-btn');
+  document.getElementById('dirty-count').textContent = count;
+  if (count > 0) {
+    pill.classList.add('show');
+    saveBtn.disabled = false;
+    saveBtn.classList.add('primary');
+  } else {
+    pill.classList.remove('show');
+    saveBtn.disabled = true;
+  }
+}
+
+// ── Save All ───────────────────────────────────────────────────────────────────
+let pendingSaves = {};
+let pendingCount = 0;
+
+const SECTION_MAP = {
+  home: 'hero', services: 'services', 'why-us': 'why-us',
+  about: 'about', portfolio: 'portfolio', pricing: 'pricing',
+  testimonials: 'testimonials', faq: 'faq', contact: 'contact', footer: 'footer'
+};
+
+function saveAll() {
+  if (dirtySections.size === 0) return;
+  pendingSaves = {};
+  pendingCount = dirtySections.size;
+
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = '⏳ Menyimpan...';
+
+  // Request HTML from each dirty section
+  dirtySections.forEach(sectionId => {
+    iWin().postMessage({ type: 'getSection', sectionId }, '*');
+  });
+}
+
+async function checkAndSave() {
+  if (Object.keys(pendingSaves).length < pendingCount) return;
+
+  let saved = 0, failed = 0;
+  for (const [sectionId, html] of Object.entries(pendingSaves)) {
+    const compName = SECTION_MAP[sectionId] || sectionId;
+    const res = await api('POST', `/api/component/${compName}`, { content: html });
+    if (res?.success) { saved++; dirtySections.delete(sectionId); }
+    else failed++;
+  }
+
+  pendingSaves = {};
+  pendingCount = 0;
+  updateDirtyUI();
+
+  const saveBtn = document.getElementById('save-btn');
+  saveBtn.textContent = '💾 Simpan Semua';
+
+  if (failed === 0) toast(`✅ ${saved} seksi berhasil disimpan!`);
+  else toast(`⚠️ ${saved} berhasil, ${failed} gagal`, 'warn');
+}
+
+// ── Image Panel ────────────────────────────────────────────────────────────────
+function toggleImgPanel() {
+  imgPanelOpen = !imgPanelOpen;
+  const panel = document.getElementById('img-panel');
+  if (imgPanelOpen) { panel.classList.add('open'); loadImages(); }
+  else {
+    panel.classList.remove('open');
+    cancelPick();
+  }
+}
+
+function cancelPick() {
+  pickingImage = false;
+  document.getElementById('pick-banner').classList.remove('show');
+}
+
+async function loadImages() {
+  const grid = document.getElementById('img-grid');
+  const images = await api('GET', '/api/images') || [];
+  if (!images.length) { grid.innerHTML = '<div style="color:var(--text-m);font-size:12px;grid-column:1/-1">Belum ada gambar</div>'; return; }
+
+  grid.innerHTML = images.map(img => `
+    <div class="img-card" onclick="selectImage('${img.url}','${escHtml(img.path)}')" title="${escHtml(img.name)}">
+      <img src="${img.url}" alt="${escHtml(img.name)}" loading="lazy"
+        onerror="this.style.height='40px';this.style.background='#334155'">
+      <div class="img-card-name">${escHtml(img.name)}</div>
+      ${img.canDelete ? `<button class="btn-green-sm" style="background:var(--red);margin:0 4px 4px;width:calc(100% - 8px)" onclick="event.stopPropagation();deleteImg('${escHtml(img.path)}')">🗑 Hapus</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function selectImage(url, path) {
+  if (pickingImage) {
+    // Replace the clicked image in iframe
+    iWin().postMessage({ type: 'imageUploaded', url }, '*');
+    cancelPick();
+    toast('✅ Gambar berhasil diganti!');
+  } else {
+    // Just copy URL
+    navigator.clipboard.writeText(location.origin + url)
+      .then(() => toast('📋 URL disalin: ' + url, 'info'))
+      .catch(() => toast('URL: ' + location.origin + url, 'info'));
+  }
+}
+
+async function deleteImg(filePath) {
+  if (!confirm('Hapus gambar ini?')) return;
+  const res = await api('DELETE', '/api/image', { filePath });
+  if (res?.success) { toast('🗑 Gambar dihapus'); loadImages(); }
+  else toast('Gagal menghapus', 'err');
+}
+
+// ── Upload ─────────────────────────────────────────────────────────────────────
+async function uploadFiles(files) {
+  const prog = document.getElementById('upload-progress');
+  for (const file of files) {
+    const el = document.createElement('div');
+    el.className = 'prog-item';
+    el.textContent = `⏳ Mengupload ${file.name}...`;
+    prog.prepend(el);
+
+    const fd = new FormData();
+    fd.append('image', file);
+    const r = await fetch('/api/upload', { method: 'POST', headers: { 'x-admin-token': TOKEN }, body: fd });
+    const data = await r.json();
+    if (data.url) {
+      el.textContent = `✅ ${file.name}`;
+      el.style.color = 'var(--green)';
+    } else {
+      el.textContent = `❌ Gagal: ${file.name}`;
+      el.style.color = 'var(--red)';
+    }
+    setTimeout(() => el.remove(), 5000);
+  }
+  document.getElementById('file-input').value = '';
+  loadImages();
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag');
+  uploadFiles(e.dataTransfer.files);
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+// ── The Edit Script injected into iframe ───────────────────────────────────────
+const EDIT_SCRIPT = `(function() {
+  if (window.__adminMode) return;
+  window.__adminMode = true;
+
+  let active = false;
+  let editingEl = null;
+
+  // Highlight box
+  const hb = document.createElement('div');
+  hb.style.cssText = 'position:absolute;pointer-events:none;border-radius:6px;z-index:99998;display:none;transition:all .1s;';
+  const hbLabel = document.createElement('div');
+  hbLabel.style.cssText = 'position:absolute;top:-26px;left:0;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;white-space:nowrap;font-family:system-ui;color:white;';
+  hb.appendChild(hbLabel);
+  document.body.appendChild(hb);
+
+  function showHB(el, isImg) {
+    const r = el.getBoundingClientRect();
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    const scrollX = window.scrollX || document.documentElement.scrollLeft;
+    hb.style.display = 'block';
+    hb.style.left   = (r.left + scrollX - 3) + 'px';
+    hb.style.top    = (r.top  + scrollY - 3) + 'px';
+    hb.style.width  = (r.width  + 6) + 'px';
+    hb.style.height = (r.height + 6) + 'px';
+    if (isImg) {
+      hb.style.border = '3px solid #f59e0b';
+      hb.style.background = 'rgba(245,158,11,.08)';
+      hbLabel.textContent = '📷 Klik untuk ganti gambar';
+      hbLabel.style.background = '#f59e0b';
+      hbLabel.style.color = '#0f172a';
+    } else {
+      hb.style.border = '3px solid #22c55e';
+      hb.style.background = 'rgba(34,197,94,.06)';
+      hbLabel.textContent = '✏️ Klik untuk edit teks';
+      hbLabel.style.background = '#22c55e';
+      hbLabel.style.color = 'white';
+    }
+  }
+  function hideHB() { hb.style.display = 'none'; }
+
+  function getSection(el) {
+    return el.closest('section') || el.closest('footer') || el.closest('header[id]');
+  }
+  function getSectionId(el) {
+    const s = getSection(el);
+    if (!s) return null;
+    return s.id || s.tagName.toLowerCase();
+  }
+
+  function isText(el) {
+    if (!el || el === document.body) return false;
+    const tag = el.tagName;
+    const allowed = ['H1','H2','H3','H4','H5','H6','P','SPAN','A','LI','STRONG','EM','BUTTON','LABEL','TD','DIV'];
+    if (!allowed.includes(tag)) return false;
+    // Must have direct text and not be a layout container
+    const hasDirectText = Array.from(el.childNodes).some(n => n.nodeType === 3 && n.textContent.trim().length > 0);
+    const fewChildren = el.querySelectorAll('*').length < 6;
+    return hasDirectText && fewChildren && el.textContent.trim().length > 0;
+  }
+
+  function onMove(e) {
+    if (!active) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    if (!el || el === hb || el === editingEl) { hideHB(); return; }
+    if (el.tagName === 'IMG') {
+      showHB(el, true);
+      document.body.style.cursor = 'pointer';
+    } else if (isText(el)) {
+      showHB(el, false);
+      document.body.style.cursor = 'text';
+    } else {
+      hideHB();
+      document.body.style.cursor = 'default';
+    }
+  }
+
+  function onClick(e) {
+    if (!active) return;
+    const el = e.target;
+
+    // Image click
+    if (el.tagName === 'IMG') {
+      e.preventDefault(); e.stopPropagation();
+      window.__pendingImg = el;
+      window.parent.postMessage({ type: 'replaceImage' }, '*');
+      return;
+    }
+
+    // Text click
+    if (isText(el)) {
+      e.preventDefault(); e.stopPropagation();
+
+      if (editingEl && editingEl !== el) stopEditing(editingEl);
+
+      editingEl = el;
+      el.contentEditable = 'true';
+      el.style.outline = '2px solid #3b82f6';
+      el.style.outlineOffset = '3px';
+      el.style.borderRadius = '3px';
+      el.focus();
+      hideHB();
+
+      // Select all text
+      try {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } catch(err) {}
+
+      // Mark dirty
+      const sid = getSectionId(el);
+      if (sid) window.parent.postMessage({ type: 'markDirty', sectionId: sid }, '*');
+
+      el.onblur = () => stopEditing(el);
+      el.onkeydown = (ev) => {
+        if (ev.key === 'Escape') el.blur();
+        if (ev.key === 'Enter' && !ev.shiftKey && el.tagName !== 'DIV') { ev.preventDefault(); el.blur(); }
+        ev.stopPropagation();
+      };
+    }
+  }
+
+  function stopEditing(el) {
+    if (!el) return;
+    el.contentEditable = 'false';
+    el.style.outline = '';
+    el.style.outlineOffset = '';
+    if (el === editingEl) editingEl = null;
+    // Update bilingual attributes to match new text
+    const txt = el.textContent.trim();
+    if (el.hasAttribute('data-id')) el.setAttribute('data-id', txt);
+    if (el.hasAttribute('data-en')) el.setAttribute('data-en', txt);
+  }
+
+  window.addEventListener('message', (e) => {
+    const { type } = e.data || {};
+
+    if (type === 'enableEdit') {
+      active = true;
+      document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', onMove, true);
+      document.addEventListener('click', onClick, true);
+    }
+
+    if (type === 'disableEdit') {
+      active = false;
+      hideHB();
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove, true);
+      document.removeEventListener('click', onClick, true);
+      if (editingEl) stopEditing(editingEl);
+    }
+
+    if (type === 'getSection') {
+      const sid = e.data.sectionId;
+      let sec = document.getElementById(sid);
+      if (!sec && sid === 'footer') sec = document.querySelector('footer');
+      if (sec) {
+        // Clean up edit artifacts before saving
+        sec.querySelectorAll('[contenteditable]').forEach(el => {
+          el.removeAttribute('contenteditable');
+          el.style.outline = '';
+          el.style.outlineOffset = '';
+        });
+        window.parent.postMessage({ type: 'sectionHtml', sectionId: sid, html: sec.outerHTML }, '*');
+      }
+    }
+
+    if (type === 'imageUploaded' && window.__pendingImg) {
+      window.__pendingImg.src = e.data.url;
+      const sid = getSectionId(window.__pendingImg);
+      if (sid) window.parent.postMessage({ type: 'markDirty', sectionId: sid }, '*');
+      window.__pendingImg = null;
+    }
+  });
+
+  window.parent.postMessage({ type: 'editReady' }, '*');
+})();`;
+
+// ── Auto login check ───────────────────────────────────────────────────────────
+(async function() {
+  if (TOKEN) {
+    const r = await fetch('/api/components', { headers: { 'x-admin-token': TOKEN } });
+    if (r.ok) {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').classList.add('show');
+      startApp();
+    } else {
+      TOKEN = ''; localStorage.removeItem('lja_token');
+    }
+  }
+})();
+</script>
+</body>
+</html>

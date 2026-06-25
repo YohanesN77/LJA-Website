@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Langgan Jaya Abadi | Industrial Construction & Engineering</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;800&family=Barlow+Condensed:wght@700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
+  <style>
+    .section-placeholder {
+      min-height: 50vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 font-sans text-slate-200 selection:bg-blue-500/30">
+
+  <!-- Global Navigation -->
+  <header id="navbar"
+    class="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-white/10 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+
+      <a href="#home" class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full overflow-hidden bg-white p-1">
+          <img 
+            src="assets/images/Logo/LOGO LJA.png" 
+            alt="LJA Logo"
+            class="w-full h-full object-cover">
+</div>
+        <div class="leading-tight">
+          <div class="text-white font-display font-bold text-lg leading-none tracking-wide">LANGGAN JAYA</div>
+          <div class="text-blue-400 text-xs font-medium tracking-widest">ABADI</div>
+        </div>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-7 text-sm text-slate-300">
+        <a href="#services" class="nav-link hover:text-white transition" data-id-text="Layanan"
+          data-en="Services">Layanan</a>
+        <a href="#about" class="nav-link hover:text-white transition" data-id-text="Tentang Kami"
+          data-en="About">Tentang Kami</a>
+        <a href="#portfolio" class="nav-link hover:text-white transition" data-id-text="Portofolio"
+          data-en="Portfolio">Portofolio</a>
+        <a href="#pricing" class="nav-link hover:text-white transition" data-id-text="Harga" data-en="Pricing">Harga</a>
+        <a href="#testimonials" class="nav-link hover:text-white transition" data-id-text="Testimoni"
+          data-en="Reviews">Testimoni</a>
+        <a href="#faq" class="nav-link hover:text-white transition" data-id-text="FAQ" data-en="FAQ">FAQ</a>
+        <a href="#contact" class="nav-link hover:text-white transition" data-id-text="Kontak"
+          data-en="Contact">Kontak</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex items-center bg-slate-800 rounded-full p-1 text-xs font-semibold">
+          <button onclick="setLang('id')" id="btn-id"
+            class="lang-btn active px-3 py-1 rounded-full transition">ID</button>
+          <button onclick="setLang('en')" id="btn-en"
+            class="lang-btn px-3 py-1 rounded-full text-slate-400 transition">EN</button>
+        </div>
+        <a href="#contact"
+          class="hidden md:flex bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-full text-sm transition items-center gap-2">
+          <span>Konsultasi Gratis</span>
+        </a>
+        <button id="menu-toggle" class="lg:hidden text-white p-2" onclick="toggleMenu()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu"
+      class="hidden lg:hidden bg-slate-950 border-t border-white/10 px-6 py-4 space-y-3 text-sm text-slate-300">
+      <a href="#services" class="block py-2 hover:text-white" onclick="toggleMenu()">Layanan</a>
+      <a href="#about" class="block py-2 hover:text-white" onclick="toggleMenu()">Tentang Kami</a>
+      <a href="#portfolio" class="block py-2 hover:text-white" onclick="toggleMenu()">Portofolio</a>
+      <a href="#pricing" class="block py-2 hover:text-white" onclick="toggleMenu()">Harga</a>
+      <a href="#testimonials" class="block py-2 hover:text-white" onclick="toggleMenu()">Testimoni</a>
+      <a href="#faq" class="block py-2 hover:text-white" onclick="toggleMenu()">FAQ</a>
+      <a href="#contact" class="block py-2 hover:text-white" onclick="toggleMenu()">Kontak</a>
+      <div class="flex gap-2 pt-2">
+        <button onclick="setLang('id')" id="btn-id-m"
+          class="lang-btn active px-4 py-2 rounded-full bg-slate-800 text-xs font-bold">ID</button>
+        <button onclick="setLang('en')" id="btn-en-m"
+          class="lang-btn px-4 py-2 rounded-full bg-slate-800 text-slate-400 text-xs font-bold">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Placeholders -->
+  <div id="home-placeholder" class="section-placeholder"></div>
+  <div id="services-placeholder" class="section-placeholder"></div>
+  <div id="why-us-placeholder" class="section-placeholder"></div>
+  <div class="metal-texture">
+    <div id="about-placeholder" class="section-placeholder"></div>
+    <div id="portfolio-placeholder" class="section-placeholder"></div>
+  </div>
+  <div id="pricing-placeholder" class="section-placeholder"></div>
+  <div id="testimonials-placeholder" class="section-placeholder"></div>
+  <div id="faq-placeholder" class="section-placeholder"></div>
+  <div id="contact-placeholder" class="section-placeholder"></div>
+  <div id="footer-placeholder" class="section-placeholder"></div>
+
+
+  <script src="assets/js/navbar.js"></script>
+  <script src="assets/js/language.js"></script>
+  <script src="assets/js/services.js"></script>
+  <script src="assets/js/faq.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/component-loader.js"></script>
+
+  <script>
+    window.addEventListener('componentsLoaded', () => {
+      // Services: render tab + preview dari data JS
+      if (window.initServices) window.initServices();
+
+      // Language: terapkan bahasa aktif ke elemen baru
+      if (window.setLang) window.setLang(window.currentLang || 'id');
+
+      // Main: observer untuk animasi bar
+      if (window.initMain) window.initMain();
+
+      // FAQ: pasang event listener accordion
+      if (window.initFAQ) window.initFAQ();
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,84 @@
+:root {
+  --steel-blue: #1e56a0;
+  --steel-blue-light: #3b82f6;
+  --metal-dark: #1a1f2e;
+  --metal-mid: #2d3748;
+  --metal-grey: #64748b;
+  --metal-light: #94a3b8;
+  --accent: #e8b84b;
+  --surface: #f8fafc;
+}
+
+.text-metal-dark {
+  color: var(--metal-dark);
+}
+
+.text-metal-mid {
+  color: var(--metal-mid);
+}
+
+.text-metal-grey {
+  color: var(--metal-grey);
+}
+
+.text-metal-light {
+  color: var(--metal-light);
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--surface);
+  color: #1e293b;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+.steel-border {
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+/* Grid pattern background */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Steel gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #60a5fa, #93c5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gold {
+  background: linear-gradient(135deg, #e8b84b, #f5d87a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f1622;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--steel-blue);
+  border-radius: 3px;
+}

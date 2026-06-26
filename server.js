@@ -24,6 +24,16 @@ app.use(express.json({ limit: '10mb' }));
 // Serve uploaded images dari DATA_UPLOADS
 app.use('/assets/images/uploads', express.static(DATA_UPLOADS));
 
+// Serve edited components dari DATA_DIR (prioritas di atas file asli)
+app.get('/assets/components/:name', (req, res, next) => {
+    const name = req.params.name;
+    const edited = path.join(DATA_COMPONENTS, name);
+    if (fs.existsSync(edited)) {
+        return res.sendFile(edited);
+    }
+    next(); // fallback ke file asli
+});
+
 // Serve static files
 app.use(express.static(path.join(__dirname)));
 

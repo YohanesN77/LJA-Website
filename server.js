@@ -28,6 +28,7 @@ app.use('/assets/images/uploads', express.static(DATA_UPLOADS));
 app.get('/assets/components/:name', (req, res, next) => {
     const name = req.params.name;
     const edited = path.join(DATA_COMPONENTS, name);
+    res.set('Cache-Control', 'no-store');
     if (fs.existsSync(edited)) {
         return res.sendFile(edited);
     }
